@@ -552,7 +552,7 @@
             </div>
             
             <div style="text-align: center; margin-top: 2rem;">
-                <a href="" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/joulfayansandy/discovery-call-30-minutes'});return false;" class="btn btn-primary btn-large">
+                <a href="" onclick="if(typeof openCalendlyPopup === 'function') { openCalendlyPopup(); } else { window.open('https://calendly.com/joulfayansandy/discovery-call-30-minutes', '_blank'); } return false;" class="btn btn-primary btn-large">
                     Book Discovery Call
                 </a>
             </div>

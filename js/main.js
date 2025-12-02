@@ -211,31 +211,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Function to safely open Calendly popup
+    // Simplified implementation following Calendly's best practices
     function openCalendlyPopup() {
         const config = window.MEDICINE_WITHIN_CONFIG?.calendly;
         const url = config?.discovery || 'https://calendly.com/joulfayansandy/discovery-call-30-minutes';
         
-        // Check if Calendly is loaded
-        if (typeof Calendly !== 'undefined' && Calendly.initPopupWidget) {
-            Calendly.initPopupWidget({ url: url });
-        } else {
-            // Wait for Calendly to load
-            const checkCalendly = setInterval(function() {
-                if (typeof Calendly !== 'undefined' && Calendly.initPopupWidget) {
-                    clearInterval(checkCalendly);
-                    Calendly.initPopupWidget({ url: url });
-                }
-            }, 100);
+        // Validate URL format
+        if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+            console.error('Invalid Calendly URL configured:', url);
+            return;
+        }
+        
+        // Simple check: if Calendly is loaded, use it immediately
+        if (typeof Calendly !== 'undefined' && typeof Calendly.initPopupWidget === 'function') {
+            try {
+                Calendly.initPopupWidget({ url: url });
+                return;
+            } catch (e) {
+                console.error('Error opening Calendly popup:', e);
+                // Fall through to fallback
+            }
+        }
+        
+        // If Calendly isn't loaded yet, wait for it with a timeout
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait (50 * 100ms)
+        
+        const checkCalendly = setInterval(function() {
+            attempts++;
             
-            // Timeout after 5 seconds
-            setTimeout(function() {
+            if (typeof Calendly !== 'undefined' && typeof Calendly.initPopupWidget === 'function') {
                 clearInterval(checkCalendly);
-                if (typeof Calendly === 'undefined') {
-                    console.error('Calendly failed to load. Please check your connection.');
-                    // Fallback: open in new window
-                    window.open(url, '_blank', 'noopener');
+                try {
+                    Calendly.initPopupWidget({ url: url });
+                } catch (e) {
+                    console.error('Error opening Calendly popup after loading:', e);
+                    openCalendlyFallback(url);
                 }
-            }, 5000);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkCalendly);
+                console.warn('Calendly widget did not load within 5 seconds. Opening booking page directly in a new window.');
+                openCalendlyFallback(url);
+            }
+        }, 100);
+    }
+    
+    // Fallback function to open Calendly URL in new window
+    function openCalendlyFallback(url) {
+        if (!url || typeof url !== 'string') {
+            console.error('No valid Calendly URL provided for fallback');
+            return;
+        }
+        
+        if (typeof window.open === 'function') {
+            try {
+                const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    // Pop-up was blocked
+                    console.warn('Pop-up blocked. Please allow pop-ups for this site or visit the booking link directly:', url);
+                }
+            } catch (e) {
+                console.error('Error opening Calendly link in new window:', e);
+            }
+        } else {
+            console.error('Unable to open Calendly link. window.open is not available.');
         }
     }
     
