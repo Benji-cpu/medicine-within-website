@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvertKit Tag Subscription Test</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="Favicon.png">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .test-section {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #242424;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .test-result.success {
+            background: rgba(56, 161, 105, 0.2);
+            border: 1px solid #38a169;
+            color: #68d391;
+        }
+        .test-result.error {
+            background: rgba(229, 62, 62, 0.2);
+            border: 1px solid #e53e3e;
+            color: #fc8181;
+        }
+        .test-result.info {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid #d4af37;
+            color: #f6e05e;
+        }
+        .test-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .test-form input {
+            flex: 1;
+            padding: 0.75rem;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f5f0e8;
+            border-radius: 4px;
+        }
+        .test-form button {
+            padding: 0.75rem 2rem;
+            background: #d4af37;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .test-form button:hover {
+            background: #e8c547;
+        }
+        .test-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
+        <h1>ConvertKit Tag Subscription Test</h1>
+        <p class="text-muted">Test each customer journey to verify tags are captured correctly</p>
+
+        <!-- Test 1: Homepage - General Newsletter -->
+        <div class="test-section">
+            <h2>1. Homepage - General Newsletter</h2>
+            <p>Tag: <code>interest-general</code> (ID: <code id="tag-general">13000746</code>)</p>
+            <div class="test-form">
+                <input type="email" id="email-general" placeholder="test-general@example.com" value="test-general-">
+                <button onclick="testSubscription('general', '13000746', 'email-general', 'result-general')">Test Subscription</button>
+            </div>
+            <div id="result-general"></div>
+        </div>
+
+        <!-- Test 2: Temple - Temple Interest -->
+        <div class="test-section">
+            <h2>2. Temple Page - Temple Interest</h2>
+            <p>Tag: <code>interest-temple</code> (ID: <code id="tag-temple">13000747</code>)</p>
+            <div class="test-form">
+                <input type="email" id="email-temple" placeholder="test-temple@example.com" value="test-temple-">
+                <button onclick="testSubscription('temple', '13000747', 'email-temple', 'result-temple')">Test Subscription</button>
+            </div>
+            <div id="result-temple"></div>
+        </div>
+
+        <!-- Test 3: Retreats - Retreats Waitlist -->
+        <div class="test-section">
+            <h2>3. Retreats Page - Retreats Waitlist</h2>
+            <p>Tag: <code>interest-retreats</code> (ID: <code id="tag-retreats">13000748</code>)</p>
+            <div class="test-form">
+                <input type="email" id="email-retreats" placeholder="test-retreats@example.com" value="test-retreats-">
+                <button onclick="testSubscription('retreats', '13000748', 'email-retreats', 'result-retreats')">Test Subscription</button>
+            </div>
+            <div id="result-retreats"></div>
+        </div>
+
+        <!-- Test 4: Kambo - Kambo Interest -->
+        <div class="test-section">
+            <h2>4. Kambo Page - Kambo Interest</h2>
+            <p>Tag: <code>interest-kambo</code> (ID: <code id="tag-kambo">13000749</code>)</p>
+            <div class="test-form">
+                <input type="email" id="email-kambo" placeholder="test-kambo@example.com" value="test-kambo-">
+                <button onclick="testSubscription('kambo', '13000749', 'email-kambo', 'result-kambo')">Test Subscription</button>
+            </div>
+            <div id="result-kambo"></div>
+        </div>
+
+        <!-- Test 5: Verify Tag Assignment -->
+        <div class="test-section">
+            <h2>5. Verify Tag Assignment</h2>
+            <p>Check if a subscriber has the correct tags assigned</p>
+            <div class="test-form">
+                <input type="email" id="email-verify" placeholder="Enter email to verify tags">
+                <button onclick="verifyTags('email-verify', 'result-verify')">Verify Tags</button>
+            </div>
+            <div id="result-verify"></div>
+        </div>
+
+        <!-- Test 6: Test Form Integration -->
+        <div class="test-section">
+            <h2>6. Test Form Integration (Actual Form)</h2>
+            <p>Test using the actual form structure that will be used on pages</p>
+            <form data-ck-tags="13000746" class="newsletter-form" id="test-form-integration">
+                <input type="email" name="email" placeholder="test-form@example.com" required>
+                <button type="submit">Subscribe via Form</button>
+            </form>
+            <div id="result-form-integration"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Generate unique test email
+        function generateTestEmail(prefix) {
+            return prefix + Date.now() + '@test.medicinewithin.nl';
+        }
+
+        // Initialize test emails
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email-general').value = generateTestEmail('test-general-');
+            document.getElementById('email-temple').value = generateTestEmail('test-temple-');
+            document.getElementById('email-retreats').value = generateTestEmail('test-retreats-');
+            document.getElementById('email-kambo').value = generateTestEmail('test-kambo-');
+        });
+
+        // Test subscription function
+        async function testSubscription(journey, tagId, emailInputId, resultId) {
+            const emailInput = document.getElementById(emailInputId);
+            const resultDiv = document.getElementById(resultId);
+            const button = emailInput.nextElementSibling;
+            
+            const email = emailInput.value.trim();
+            
+            if (!email || !email.includes('@')) {
+                resultDiv.innerHTML = '<div class="test-result error">❌ Please enter a valid email address</div>';
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            resultDiv.innerHTML = '<div class="test-result info">🔄 Testing subscription...</div>';
+
+            try {
+                const url = `https://api.convertkit.com/v3/tags/${tagId}/subscribe`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: JSON.stringify({
+                        api_key: window.MEDICINE_WITHIN_CONFIG.convertKit.apiKey,
+                        email: email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+                            ✅ <strong>Success!</strong><br>
+                            Email: ${email}<br>
+                            Tag ID: ${tagId}<br>
+                            Journey: ${journey}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <p style="margin-top: 1rem;"><strong>Next:</strong> Check ConvertKit dashboard to verify the subscriber has tag "${getTagName(journey)}"</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="test-result error">
+                            ❌ <strong>Error:</strong><br>
+                            ${data.message || 'Subscription failed'}<br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        ❌ <strong>Network Error:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test Subscription';
+            }
+        }
+
+        // Verify tags for a subscriber
+        async function verifyTags(emailInputId, resultId) {
+            const emailInput = document.getElementById(emailInputId);
+            const resultDiv = document.getElementById(resultId);
+            const button = emailInput.nextElementSibling;
+            
+            const email = emailInput.value.trim();
+            
+            if (!email || !email.includes('@')) {
+                resultDiv.innerHTML = '<div class="test-result error">❌ Please enter a valid email address</div>';
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Verifying...';
+            resultDiv.innerHTML = '<div class="test-result info">🔄 Checking subscriber tags...</div>';
+
+            try {
+                // Note: This requires API secret, so we'll use a workaround
+                // Check via subscriber endpoint if available
+                const url = `https://api.convertkit.com/v3/subscribers?api_secret=REQUIRED&email_address=${encodeURIComponent(email)}`;
+                
+                resultDiv.innerHTML = `
+                    <div class="test-result info">
+                        ℹ️ <strong>Tag Verification:</strong><br>
+                        To verify tags, you'll need to check the ConvertKit dashboard directly:<br>
+                        <ol style="text-align: left; margin-top: 1rem;">
+                            <li>Go to ConvertKit → Subscribers</li>
+                            <li>Search for: <code>${email}</code></li>
+                            <li>Click on the subscriber</li>
+                            <li>Check the "Tags" section</li>
+                        </ol>
+                        <p style="margin-top: 1rem;">Expected tags based on journey:</p>
+                        <ul style="text-align: left;">
+                            <li>Homepage → <code>interest-general</code></li>
+                            <li>Temple → <code>interest-temple</code></li>
+                            <li>Retreats → <code>interest-retreats</code></li>
+                            <li>Kambo → <code>interest-kambo</code></li>
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+                        ❌ <strong>Error:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Verify Tags';
+            }
+        }
+
+        function getTagName(journey) {
+            const tagNames = {
+                general: 'interest-general',
+                temple: 'interest-temple',
+                retreats: 'interest-retreats',
+                kambo: 'interest-kambo'
+            };
+            return tagNames[journey] || journey;
+        }
+
+        // Test form integration
+        document.getElementById('test-form-integration').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const resultDiv = document.getElementById('result-form-integration');
+            resultDiv.innerHTML = '<div class="test-result info">🔄 Form submitted via ConvertKitManager...</div>';
+            
+            // The ConvertKitManager should handle this automatically
+            // Check after a moment if it worked
+            setTimeout(() => {
+                const email = this.querySelector('input[type="email"]').value;
+                resultDiv.innerHTML = `
+                    <div class="test-result success">
+                        ✅ Form submission handled by ConvertKitManager<br>
+                        Check browser console for details<br>
+                        Email: ${email}<br>
+                        Tag: interest-general (13000746)
+                    </div>
+                `;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+

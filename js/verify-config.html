@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvertKit Config Verification</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../Favicon.png">
+    
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f5f0e8;
+        }
+        .success { color: #38a169; }
+        .error { color: #e53e3e; }
+        .info { color: #d4af37; }
+        pre { background: #242424; padding: 15px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>ConvertKit Configuration Verification</h1>
+    <div id="results"></div>
+    
+    <script src="config.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        let output = '';
+        
+        // Test 1: Check if CONFIG exists
+        if (typeof window.MEDICINE_WITHIN_CONFIG !== 'undefined') {
+            output += '<p class="success">✅ CONFIG object loaded</p>';
+        } else {
+            output += '<p class="error">❌ CONFIG object not found</p>';
+            results.innerHTML = output;
+            throw new Error('CONFIG not loaded');
+        }
+        
+        const config = window.MEDICINE_WITHIN_CONFIG;
+        
+        // Test 2: Check ConvertKit config
+        if (config.convertKit) {
+            output += '<p class="success">✅ ConvertKit config exists</p>';
+        } else {
+            output += '<p class="error">❌ ConvertKit config not found</p>';
+        }
+        
+        // Test 3: Check API key
+        if (config.convertKit?.apiKey) {
+            output += `<p class="success">✅ API Key: ${config.convertKit.apiKey.substring(0, 10)}...</p>`;
+        } else {
+            output += '<p class="error">❌ API Key not found</p>';
+        }
+        
+        // Test 4: Check tags object
+        if (config.convertKit?.tags) {
+            output += '<p class="success">✅ Tags object exists</p>';
+            
+            const tags = config.convertKit.tags;
+            const expectedTags = ['general', 'temple', 'retreats', 'kambo'];
+            const tagNames = {
+                general: 'interest-general',
+                temple: 'interest-temple',
+                retreats: 'interest-retreats',
+                kambo: 'interest-kambo'
+            };
+            
+            output += '<h2>Tag IDs:</h2><pre>';
+            expectedTags.forEach(key => {
+                if (tags[key]) {
+                    output += `<span class="success">✅ ${key}: '${tags[key]}' (${tagNames[key]})</span>\n`;
+                } else {
+                    output += `<span class="error">❌ ${key}: MISSING</span>\n`;
+                }
+            });
+            output += '</pre>';
+            
+            // Test 5: Verify all tags are numeric strings
+            let allValid = true;
+            expectedTags.forEach(key => {
+                if (tags[key] && !/^\d+$/.test(tags[key])) {
+                    output += `<p class="error">❌ Tag ID for "${key}" is not numeric: ${tags[key]}</p>`;
+                    allValid = false;
+                }
+            });
+            
+            if (allValid) {
+                output += '<p class="success">✅ All tag IDs are valid numeric strings</p>';
+            }
+            
+        } else {
+            output += '<p class="error">❌ Tags object not found</p>';
+        }
+        
+        // Test 6: Check forms object (should still exist)
+        if (config.convertKit?.forms) {
+            output += '<p class="info">ℹ️ Forms object still exists (for backward compatibility)</p>';
+        }
+        
+        // Display full config structure
+        output += '<h2>Full Config Structure:</h2>';
+        output += '<pre>' + JSON.stringify(config, null, 2) + '</pre>';
+        
+        results.innerHTML = output;
+        
+        // Console output for debugging
+        console.log('ConvertKit Config:', config.convertKit);
+        console.log('Tag IDs:', config.convertKit?.tags);
+        console.log('Access example: window.MEDICINE_WITHIN_CONFIG.convertKit.tags.general');
+    </script>
+</body>
+</html>
+
