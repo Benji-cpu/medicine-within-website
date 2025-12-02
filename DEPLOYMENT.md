@@ -1,4 +1,6 @@
-# Deployment Guide - Medicine Within Website
+# GitHub Pages Deployment Guide - Medicine Within Website
+
+> **Note**: This is a quick reference for GitHub Pages deployment. For a complete overview of all deployment options, see `README.md`.
 
 ## 🚀 Quick Start
 
