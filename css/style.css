@@ -344,6 +344,7 @@ p {
     object-fit: cover;
     object-position: center 20%;
     z-index: 0;
+    transition: opacity 0.5s ease;
 }
 
 .hero-bg video {
@@ -1034,6 +1035,41 @@ p {
     background: rgba(212, 175, 55, 0.2);
 }
 
+/* Instagram Embed Grid */
+.instagram-embed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+    justify-items: center;
+}
+
+@media (max-width: 768px) {
+    .instagram-embed-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* Instagram Media (Embedded Posts) */
+.instagram-media {
+    margin: 0 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Instagram Feed Widget Container */
+.instagram-feed-widget {
+    width: 100%;
+    margin: 2rem 0;
+}
+
+.instagram-feed-widget iframe {
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+}
+
 /* --------------------------------------------------------------------------
    10. Gallery
    -------------------------------------------------------------------------- */
@@ -1350,7 +1386,7 @@ p {
     text-align: center;
     max-width: 700px;
     margin: 0 auto;
-    padding: var(--space-lg);
+    padding: var(--space-sm);
     position: relative;
 }
 
@@ -1599,7 +1635,7 @@ p {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
-    max-width: 900px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -1607,7 +1643,7 @@ p {
     background: var(--color-bg-card);
     border: 1px solid rgba(212, 175, 55, 0.15);
     border-radius: 12px;
-    padding: var(--space-lg);
+    padding: var(--space-sm);
     transition: all 0.3s ease;
 }
 
@@ -2007,7 +2043,7 @@ a.formkit-powered-by {
     margin-bottom: var(--space-sm);
 }
 
-/* Ornamental line */
+/* Ornamental line - Three-element design (lines + logo) */
 .ornament {
     display: flex;
     align-items: center;
@@ -2019,19 +2055,20 @@ a.formkit-powered-by {
 .ornament::before,
 .ornament::after {
     content: '';
-    width: 60px;
+    width: 80px;
     height: 1px;
-    background: linear-gradient(to right, transparent, var(--color-gold));
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.3), var(--color-gold));
+    flex-shrink: 0;
 }
 
 .ornament::after {
-    background: linear-gradient(to left, transparent, var(--color-gold));
+    background: linear-gradient(to left, transparent, rgba(212, 175, 55, 0.3), var(--color-gold));
 }
 
 .ornament span {
     display: inline-block;
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
     font-size: 0;
     line-height: 0;
     color: transparent;
@@ -2039,15 +2076,46 @@ a.formkit-powered-by {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.8;
+    opacity: 0.85;
+    flex-shrink: 0;
 }
 
 /* If ornament contains an img tag instead of span */
 .ornament img {
-    width: 24px;
-    height: 24px;
-    opacity: 0.8;
+    width: 36px;
+    height: 36px;
+    opacity: 0.85;
     display: block;
+    flex-shrink: 0;
+}
+
+/* Responsive: Longer lines on desktop */
+@media (min-width: 768px) {
+    .ornament::before,
+    .ornament::after {
+        width: 110px;
+    }
+    
+    .ornament span,
+    .ornament img {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Easter egg variant - for special high-quality symbols */
+.ornament-easter-egg span {
+    background-image: none;
+    font-size: 1.5rem;
+    color: var(--color-gold);
+    opacity: 0.7;
+    line-height: 1;
+}
+
+@media (min-width: 768px) {
+    .ornament-easter-egg span {
+        font-size: 1.75rem;
+    }
 }
 
 /* Decorative logo elements */
@@ -2058,6 +2126,7 @@ a.formkit-powered-by {
     z-index: 0;
 }
 
+/* Deprecated: Use .ornament instead */
 .logo-decorative {
     width: 40px;
     height: 40px;
@@ -2078,6 +2147,7 @@ a.formkit-powered-by {
     margin-bottom: 1rem;
 }
 
+/* Deprecated: Use .ornament instead */
 .logo-section {
     width: 48px;
     height: 48px;
@@ -3278,13 +3348,43 @@ a.formkit-powered-by {
     width: 100%;
     overflow: hidden;
     border-radius: var(--border-radius);
+    background: #000;
+    min-height: 300px;
 }
 
 .video-container video {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: cover;
+    min-height: 300px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Fallback poster image - shown while video loads */
+.video-poster-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    transition: opacity 0.5s ease;
+}
+
+/* Hide fallback when video is ready */
+.video-container video[src],
+.video-container video source[src] {
+    z-index: 2;
+}
+
+.video-container video:not([src]):not(:has(source[src])) ~ .video-poster-fallback,
+.video-container:has(video[src]) .video-poster-fallback,
+.video-container:has(video source[src]) .video-poster-fallback {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Background Video (Hero-style) */
@@ -3295,7 +3395,28 @@ a.formkit-powered-by {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -1;
+    z-index: 1;
+}
+
+/* Hide image when video is present and ready */
+.hero:has(.video-background[src]),
+.hero:has(.video-background source[src]),
+.spoke-card:has(.video-background[src]),
+.spoke-card:has(.video-background source[src]) {
+    .hero-bg:not(.video-background),
+    .spoke-card-bg:not(.video-background) {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+}
+
+/* Fallback for browsers that don't support :has() */
+.hero .video-background[src] ~ .hero-bg:not(.video-background),
+.hero .video-background source[src] ~ .hero-bg:not(.video-background),
+.spoke-card .video-background[src] ~ .spoke-card-bg:not(.video-background),
+.spoke-card .video-background source[src] ~ .spoke-card-bg:not(.video-background) {
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
 
 .video-background-wrapper {

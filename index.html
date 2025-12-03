@@ -79,7 +79,7 @@
     <!-- ========== ABOUT HOOK ========== -->
     <section class="section section-elevated">
         <div class="container container-narrow text-center">
-            <img src="assets/img/logo_gold_transparent.png" alt="" class="logo-section">
+            <div class="ornament ornament-easter-egg"><span>◊</span></div>
             <h2>Medicine for the Soul.<br>Magic for the Body.</h2>
             <p class="byline">— Sandi, Founder of Medicine Within</p>
             <p style="font-size: 1.1rem;">
@@ -165,6 +165,20 @@
                         class="spoke-card-bg"
                         loading="lazy"
                     >
+                    <video 
+                        class="spoke-card-bg video-background"
+                        data-lazy-video
+                        data-background-video
+                        data-autoplay
+                        data-src="assets/videos/sandi-group-2.mov"
+                        poster="assets/img/events/Maithuna-day01-byShariVandeCraen-3.jpg"
+                        preload="none"
+                        muted
+                        loop
+                        playsinline
+                        aria-hidden="true"
+                    >
+                    </video>
                     <div class="spoke-card-overlay"></div>
                     <div class="spoke-card-content">
                         <h3>Temple</h3>
@@ -256,7 +270,7 @@
         </div>
     </section>
     
-    <!-- ========== INSTAGRAM FEED (Static) ========== -->
+    <!-- ========== INSTAGRAM FEED ========== -->
     <section class="section section-dark">
         <div class="container">
             <div class="section-header">
@@ -264,35 +278,32 @@
                 <h2>Follow the Journey</h2>
             </div>
             
-            <div class="instagram-grid">
-                <a href="https://www.instagram.com/medicinewithin_nl?igsh=MXFlNHRjaXAza3cxZw%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="instagram-item">
-                    <img 
-                        src="assets/img/events/Maithuna-day01-byShariVandeCraen-15.jpg" 
-                        alt="Ritual moment" 
-                        loading="lazy"
-                    >
-                </a>
-                <a href="https://www.instagram.com/medicinewithin_nl?igsh=MXFlNHRjaXAza3cxZw%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="instagram-item">
-                    <img 
-                        src="assets/img/events/Maithuna-day01-byShariVandeCraen-20.jpg" 
-                        alt="Sacred ceremony" 
-                        loading="lazy"
-                    >
-                </a>
-                <a href="https://www.instagram.com/medicinewithin_nl?igsh=MXFlNHRjaXAza3cxZw%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="instagram-item">
-                    <img 
-                        src="assets/img/events/Maithuna-day01-byShariVandeCraen-25.jpg" 
-                        alt="Community gathering" 
-                        loading="lazy"
-                    >
-                </a>
-                <a href="https://www.instagram.com/medicinewithin_nl?igsh=MXFlNHRjaXAza3cxZw%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="instagram-item">
-                    <img 
-                        src="assets/img/events/Maithuna-day01-byShariVandeCraen-30.jpg" 
-                        alt="Temple atmosphere" 
-                        loading="lazy"
-                    >
-                </a>
+            <!-- Individual Instagram Post Embeds -->
+            <div class="instagram-embed-grid">
+                <!-- 
+                    To add Instagram posts:
+                    1. Go to the Instagram post you want to embed
+                    2. Click the three dots (...) in the top right
+                    3. Select "Embed"
+                    4. Click "Copy embed code"
+                    5. Paste the code below (it will be a <blockquote class="instagram-media"> element)
+                    
+                    Example: Paste your Instagram embed codes here
+                -->
+                
+                <!-- Your Instagram embed codes will go here -->
+                
+            </div>
+            
+            <!-- Dynamic Instagram Feed Widget -->
+            <!-- To use: Sign up at https://elfsight.com/instagram-feed-instashow/ and paste your widget code below -->
+            <div class="instagram-feed-widget mt-lg">
+                <!-- Elfsight Instagram Feed Widget will be inserted here -->
+                <!-- Example: <div class="elfsight-app-XXXXX"></div> -->
+            </div>
+            
+            <div class="text-center mt-lg">
+                <a href="https://www.instagram.com/medicinewithin_nl?igsh=MXFlNHRjaXAza3cxZw%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="btn btn-primary">Follow on Instagram</a>
             </div>
         </div>
     </section>
@@ -300,7 +311,7 @@
     <!-- ========== NEWSLETTER ========== -->
     <section class="section section-elevated">
         <div class="container container-narrow text-center">
-            <img src="assets/img/logo_gold_transparent.png" alt="" class="logo-decorative">
+            <div class="ornament"><span></span></div>
             <h2>Join the Circle</h2>
             <p class="text-muted mb-md">
                 Receive invitations to ceremonies, wisdom teachings, and early access to retreats.
@@ -399,9 +410,13 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/video-loader.js"></script>
     
     <!-- Calendly Widget JS -->
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    
+    <!-- Instagram Embed Script -->
+    <script async src="//www.instagram.com/embed.js"></script>
 </body>
 </html>
 

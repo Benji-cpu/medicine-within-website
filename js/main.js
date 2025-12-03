@@ -3,6 +3,149 @@
  * Handles navigation, smooth scrolling, and UI interactions
  */
 
+// ==========================================================================
+// Calendly Script Loading State Management (defined early for immediate access)
+// ==========================================================================
+
+// Track Calendly script loading state to prevent race conditions
+const CalendlyLoader = (function() {
+    let scriptState = 'unknown'; // 'unknown', 'loading', 'loaded', 'ready', 'failed'
+    let scriptPromise = null;
+    let readyCallbacks = [];
+    
+    /**
+     * Check if Calendly is fully ready (not just loaded, but initialized)
+     */
+    function isCalendlyReady() {
+        return typeof Calendly !== 'undefined' && 
+               typeof Calendly.initPopupWidget === 'function' &&
+               Calendly.initPopupWidget.length === 1; // Ensure it's the correct function signature
+    }
+    
+    /**
+     * Load Calendly script dynamically with proper ready detection
+     */
+    function loadCalendlyScript() {
+        if (scriptPromise) {
+            return scriptPromise;
+        }
+        
+        scriptState = 'loading';
+        scriptPromise = new Promise(function(resolve, reject) {
+            // Check if script is already in the DOM
+            const existingScript = document.querySelector('script[src*="assets.calendly.com/assets/external/widget.js"]');
+            
+            if (existingScript) {
+                // Script tag exists, wait for it to load
+                if (existingScript.hasAttribute('data-calendly-loaded')) {
+                    // Already loaded
+                    scriptState = 'loaded';
+                    waitForCalendlyReady(resolve, reject);
+                } else {
+                    // Still loading, wait for load event
+                    existingScript.addEventListener('load', function() {
+                        existingScript.setAttribute('data-calendly-loaded', 'true');
+                        scriptState = 'loaded';
+                        waitForCalendlyReady(resolve, reject);
+                    });
+                    
+                    existingScript.addEventListener('error', function() {
+                        scriptState = 'failed';
+                        reject(new Error('Failed to load Calendly script'));
+                    });
+                    
+                    // If script is already loaded but event didn't fire
+                    if (existingScript.complete || existingScript.readyState === 'complete') {
+                        existingScript.setAttribute('data-calendly-loaded', 'true');
+                        scriptState = 'loaded';
+                        waitForCalendlyReady(resolve, reject);
+                    }
+                }
+            } else {
+                // Script not in DOM, need to load it
+                const script = document.createElement('script');
+                script.src = 'https://assets.calendly.com/assets/external/widget.js';
+                script.async = true;
+                script.type = 'text/javascript';
+                
+                script.onload = function() {
+                    script.setAttribute('data-calendly-loaded', 'true');
+                    scriptState = 'loaded';
+                    waitForCalendlyReady(resolve, reject);
+                };
+                
+                script.onerror = function() {
+                    scriptState = 'failed';
+                    reject(new Error('Failed to load Calendly script'));
+                };
+                
+                document.head.appendChild(script);
+            }
+        });
+        
+        return scriptPromise;
+    }
+    
+    /**
+     * Wait for Calendly to be fully ready after script loads
+     */
+    function waitForCalendlyReady(resolve, reject) {
+        let attempts = 0;
+        const maxAttempts = 100; // 10 seconds max (100 * 100ms)
+        
+        const checkReady = setInterval(function() {
+            attempts++;
+            
+            if (isCalendlyReady()) {
+                clearInterval(checkReady);
+                scriptState = 'ready';
+                resolve();
+                // Execute any queued callbacks
+                readyCallbacks.forEach(function(callback) {
+                    try {
+                        callback();
+                    } catch (e) {
+                        console.error('Error executing Calendly ready callback:', e);
+                    }
+                });
+                readyCallbacks = [];
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkReady);
+                scriptState = 'failed';
+                reject(new Error('Calendly widget did not initialize within 10 seconds'));
+            }
+        }, 100);
+    }
+    
+    /**
+     * Get Calendly ready state - ensures script is loaded and ready
+     */
+    function ensureCalendlyReady() {
+        return new Promise(function(resolve, reject) {
+            // If already ready, resolve immediately
+            if (scriptState === 'ready' && isCalendlyReady()) {
+                resolve();
+                return;
+            }
+            
+            // If failed, reject immediately
+            if (scriptState === 'failed') {
+                reject(new Error('Calendly script failed to load'));
+                return;
+            }
+            
+            // If loading or unknown, wait for script to load
+            loadCalendlyScript().then(resolve).catch(reject);
+        });
+    }
+    
+    return {
+        ensureReady: ensureCalendlyReady,
+        isReady: isCalendlyReady,
+        getState: function() { return scriptState; }
+    };
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // ==========================================================================
@@ -211,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Function to safely open Calendly popup
-    // Simplified implementation following Calendly's best practices
+    // Enhanced implementation with proper script loading detection
     function openCalendlyPopup() {
         const config = window.MEDICINE_WITHIN_CONFIG?.calendly;
         const url = config?.discovery || 'https://calendly.com/joulfayansandy/discovery-call-30-minutes';
@@ -222,38 +365,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Simple check: if Calendly is loaded, use it immediately
-        if (typeof Calendly !== 'undefined' && typeof Calendly.initPopupWidget === 'function') {
+        // Ensure Calendly is fully ready before opening popup
+        CalendlyLoader.ensureReady().then(function() {
             try {
-                Calendly.initPopupWidget({ url: url });
-                return;
+                if (typeof Calendly !== 'undefined' && typeof Calendly.initPopupWidget === 'function') {
+                    Calendly.initPopupWidget({ url: url });
+                } else {
+                    throw new Error('Calendly.initPopupWidget is not available');
+                }
             } catch (e) {
                 console.error('Error opening Calendly popup:', e);
-                // Fall through to fallback
-            }
-        }
-        
-        // If Calendly isn't loaded yet, wait for it with a timeout
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max wait (50 * 100ms)
-        
-        const checkCalendly = setInterval(function() {
-            attempts++;
-            
-            if (typeof Calendly !== 'undefined' && typeof Calendly.initPopupWidget === 'function') {
-                clearInterval(checkCalendly);
-                try {
-                    Calendly.initPopupWidget({ url: url });
-                } catch (e) {
-                    console.error('Error opening Calendly popup after loading:', e);
-                    openCalendlyFallback(url);
-                }
-            } else if (attempts >= maxAttempts) {
-                clearInterval(checkCalendly);
-                console.warn('Calendly widget did not load within 5 seconds. Opening booking page directly in a new window.');
                 openCalendlyFallback(url);
             }
-        }, 100);
+        }).catch(function(error) {
+            console.warn('Calendly not ready, using fallback:', error.message);
+            openCalendlyFallback(url);
+        });
     }
     
     // Fallback function to open Calendly URL in new window
@@ -280,6 +407,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Make function globally available for onclick handlers
     window.openCalendlyPopup = openCalendlyPopup;
+    
+    // Pre-load Calendly script early (after DOM is ready) for faster first click
+    // This ensures the script is loading in the background even if user hasn't clicked yet
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start loading Calendly script in background
+            CalendlyLoader.ensureReady().catch(function() {
+                // Silently fail - script will load on demand if this fails
+            });
+        });
+    } else {
+        // DOM already ready, start loading immediately
+        CalendlyLoader.ensureReady().catch(function() {
+            // Silently fail - script will load on demand if this fails
+        });
+    }
     
     document.body.appendChild(floatingBtn);
     
