@@ -2111,7 +2111,7 @@ const ConvertKitManager = (function() {
 })();
 
 // ==========================================================================
-// Lead Magnet Popup ("The Body Remembers")
+// Lead Magnet Popup ("Come Home To Your Body")
 // ==========================================================================
 
 (function() {
@@ -2181,7 +2181,7 @@ const ConvertKitManager = (function() {
             <div class="lm-popup" role="dialog" aria-modal="true" aria-labelledby="lm-popup-heading">
                 <button type="button" class="lm-popup__close" aria-label="Close">&times;</button>
                 <p class="lm-popup__label">Free Guide</p>
-                <h3 id="lm-popup-heading">The Body <span class="gold-texture-text">Remembers</span></h3>
+                <h3 id="lm-popup-heading">Come Home <span class="gold-texture-text">To Your Body</span></h3>
                 <p class="lead">5 daily rituals to return to your embodied intelligence, sent straight to your inbox.</p>
 
                 <form class="lm-popup-form" data-state="idle" novalidate>
