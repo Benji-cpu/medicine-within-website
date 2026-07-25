@@ -28,7 +28,7 @@
         data-component="hero-v2"
         data-hero-label="Conscious Connection"
         data-hero-title="COUPLES<span>WORK</span>"
-        data-hero-subtitle="Deepen your intimacy, refine your communication, and explore the sacred polarity of your union."
+        data-hero-subtitle="Deepen your intimacy, learn to communicate with real clarity, and meet the masculine and feminine already alive between you."
         data-hero-image-src="/assets/img/blindfolded-connection-pair.jpg"
         data-hero-place="mw-hero--place-bottom-left"
         data-hero-overlay="mw-hero--overlay-bottom"
@@ -105,5 +105,192 @@
     <!-- Scripts -->
     <script src="../js/config.js"></script>
     <script src="../js/main.js"></script>
+    <script>
+        // Held Together popup - fires on load for this page only, independent
+        // of the sitewide lead magnet popup (which deliberately excludes all
+        // /mentorship/ pages so it doesn't interrupt paid-offer traffic).
+        (function () {
+            const LEAD_MAGNET_SLUG = 'held-together';
+            const DISMISS_KEY = 'mw_couples_popup_dismissed_at';
+            const SUBSCRIBED_KEY = 'mw_couples_popup_subscribed';
+            const SESSION_SHOWN_KEY = 'mw_couples_popup_shown_this_session';
+            const SNOOZE_DAYS = 7;
+
+            function safeGet(storage, key) {
+                try { return storage.getItem(key); } catch (e) { return null; }
+            }
+            function safeSet(storage, key, value) {
+                try { storage.setItem(key, value); } catch (e) {}
+            }
+
+            function shouldShow() {
+                if (safeGet(sessionStorage, SESSION_SHOWN_KEY) === 'true') return false;
+                if (safeGet(localStorage, SUBSCRIBED_KEY) === 'true') return false;
+                const dismissedAt = safeGet(localStorage, DISMISS_KEY);
+                if (dismissedAt) {
+                    const days = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
+                    if (days < SNOOZE_DAYS) return false;
+                }
+                return true;
+            }
+
+            function validateEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            function buildPopup() {
+                const overlay = document.createElement('div');
+                overlay.className = 'lm-popup-overlay';
+                overlay.innerHTML = `
+                    <div class="lm-popup" role="dialog" aria-modal="true" aria-labelledby="couples-lm-popup-heading">
+                        <button type="button" class="lm-popup__close" aria-label="Close">&times;</button>
+                        <p class="lm-popup__label">Free Guide</p>
+                        <h3 id="couples-lm-popup-heading">Held <span class="gold-texture-text">Together</span></h3>
+                        <p class="lead">A four-step nervous system practice for couples who keep trying harder and still don't feel met. Sent straight to your inbox.</p>
+
+                        <form class="lm-popup-form" data-state="idle" novalidate>
+                            <div class="lm-popup-form-fields">
+                                <div class="lm-popup-form-row">
+                                    <input type="text" name="firstName" class="form-input" placeholder="First name" autocomplete="given-name" required>
+                                    <input type="text" name="lastName" class="form-input" placeholder="Last name" autocomplete="family-name" required>
+                                </div>
+                                <input type="email" name="email" class="form-input" placeholder="Your email address" autocomplete="email" required>
+                                <button type="submit" class="btn btn-primary">Send Me The Guide</button>
+                            </div>
+                            <p class="lm-popup-status" role="status" aria-live="polite"></p>
+                        </form>
+
+                        <p class="lm-popup-privacy">No spam, only love. Unsubscribe anytime xx</p>
+                    </div>
+                `;
+                return overlay;
+            }
+
+            function wirePopup(overlay) {
+                const popupEl = overlay.querySelector('.lm-popup');
+                const closeBtn = overlay.querySelector('.lm-popup__close');
+                const form = overlay.querySelector('.lm-popup-form');
+                const statusEl = overlay.querySelector('.lm-popup-status');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const firstFieldInput = overlay.querySelector('input[name="firstName"]');
+                let lastFocused = null;
+
+                function getFocusable() {
+                    return Array.from(popupEl.querySelectorAll('button, input, a[href]')).filter(el => !el.disabled);
+                }
+
+                function trapFocus(e) {
+                    if (e.key !== 'Tab') return;
+                    const focusable = getFocusable();
+                    if (focusable.length === 0) return;
+                    const first = focusable[0];
+                    const last = focusable[focusable.length - 1];
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+
+                function hideVisual() {
+                    overlay.classList.remove('is-visible');
+                    document.body.style.overflow = '';
+                    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+                }
+
+                function dismiss() {
+                    hideVisual();
+                    safeSet(localStorage, DISMISS_KEY, String(Date.now()));
+                }
+
+                function show() {
+                    lastFocused = document.activeElement;
+                    overlay.classList.add('is-visible');
+                    document.body.style.overflow = 'hidden';
+                    safeSet(sessionStorage, SESSION_SHOWN_KEY, 'true');
+                    requestAnimationFrame(function () {
+                        (firstFieldInput || closeBtn).focus();
+                    });
+                }
+
+                closeBtn.addEventListener('click', dismiss);
+                overlay.addEventListener('click', function (e) { if (e.target === overlay) dismiss(); });
+                document.addEventListener('keydown', function (e) {
+                    if (!overlay.classList.contains('is-visible')) return;
+                    if (e.key === 'Escape') dismiss(); else trapFocus(e);
+                });
+
+                function setStatus(message, type) {
+                    statusEl.textContent = message;
+                    statusEl.classList.remove('is-error', 'is-success');
+                    if (type) statusEl.classList.add(type === 'error' ? 'is-error' : 'is-success');
+                }
+
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const payload = {
+                        firstName: formData.get('firstName')?.trim(),
+                        lastName: formData.get('lastName')?.trim(),
+                        email: formData.get('email')?.trim(),
+                        leadMagnet: LEAD_MAGNET_SLUG,
+                    };
+                    if (!payload.firstName || !payload.lastName || !payload.email) {
+                        setStatus('Please fill in your first name, last name, and email.', 'error');
+                        return;
+                    }
+                    if (!validateEmail(payload.email)) {
+                        setStatus('Please enter a valid email address.', 'error');
+                        return;
+                    }
+                    submitBtn.disabled = true;
+                    setStatus('Sending...', null);
+                    try {
+                        const response = await fetch('/api/subscribe', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        });
+                        if (!response.ok) {
+                            let message = 'Something went wrong. Please try again.';
+                            try {
+                                const data = await response.json();
+                                message = data.error || message;
+                            } catch (parseErr) {}
+                            setStatus(message, 'error');
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        form.dataset.state = 'success';
+                        setStatus('Check your inbox. Your guide is on its way.', 'success');
+                        safeSet(localStorage, SUBSCRIBED_KEY, 'true');
+                        setTimeout(hideVisual, 2500);
+                    } catch (err) {
+                        console.error('Couples Lead Magnet Popup Error:', err);
+                        setStatus('Something went wrong. Please check your connection and try again.', 'error');
+                        submitBtn.disabled = false;
+                    }
+                });
+
+                return { show };
+            }
+
+            function init() {
+                if (!shouldShow()) return;
+                const overlay = buildPopup();
+                document.body.appendChild(overlay);
+                const controls = wirePopup(overlay);
+                setTimeout(controls.show, 600);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
 </body>
 </html>

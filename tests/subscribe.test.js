@@ -168,6 +168,30 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
     expect(result.statusCode).toBe(400);
     expect(sendEmail).not.toHaveBeenCalled();
   });
+
+  it('reports alreadySubscribed instead of crashing when a concurrent request wins the insert race', async () => {
+    // Simulates two near-simultaneous submissions: both pass findExistingSubscription
+    // (neither sees a row yet), then the DB's unique(email, lead_magnet) constraint
+    // rejects the second insert with a Postgres unique-violation (code 23505).
+    const raceSupabase = createFakeSupabase();
+    raceSupabase.from = () => ({
+      select: fakeSupabase.from().select,
+      async insert() {
+        const error = new Error('duplicate key value violates unique constraint');
+        error.code = '23505';
+        return { data: null, error };
+      },
+    });
+
+    const result = await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: raceSupabase, sendEmail, leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toEqual({ success: true, alreadySubscribed: true });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
 });
 
 describe('api/subscribe.js createHandler (real HTTP entrypoint shape, fake clients — no live Resend API ever called)', () => {
@@ -191,12 +215,12 @@ describe('api/subscribe.js createHandler (real HTTP entrypoint shape, fake clien
     expect(sendEmail).toHaveBeenCalledTimes(2);
     const sentPayload = sendEmail.mock.calls[0][0];
     expect(sentPayload.to).toBe('maya@example.com');
-    expect(sentPayload.subject).toBe('Your guide is here: The Body Remembers');
+    expect(sentPayload.subject).toBe('Your guide is here: Come Home To Your Body');
     expect(sentPayload.html).toContain('https://medicinewithin.nl/assets/downloads/the-body-remembers.pdf');
 
     const notifyPayload = sendEmail.mock.calls[1][0];
     expect(notifyPayload.to).toBe('sandi@medicinewithin.nl');
-    expect(notifyPayload.subject).toBe('New subscriber: Maya Rivera wants The Body Remembers');
+    expect(notifyPayload.subject).toBe('New subscriber: Maya Rivera wants Come Home To Your Body');
   });
 
   it('rejects non-POST requests and never calls the email function', async () => {

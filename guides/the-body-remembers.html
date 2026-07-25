@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get Come Home To Your Body - 5 daily rituals to return to your embodied intelligence, free from Medicine Within.">
+
+    <title>Come Home To Your Body | Free Guide | Medicine Within</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo-gold.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        .mw-hero__subtitle {
+            font-style: normal;
+        }
+        .lead-magnet-form-row {
+            display: flex;
+            gap: var(--space-md, 16px);
+            flex-wrap: wrap;
+        }
+        .lead-magnet-form-row .form-input {
+            flex: 1 1 200px;
+        }
+        .lead-magnet-form-status {
+            min-height: 1.5em;
+            margin-top: var(--space-sm, 8px);
+        }
+        .lead-magnet-form-status.is-error {
+            color: #b23b3b;
+        }
+        .lead-magnet-form-status.is-success {
+            color: #209d9d;
+        }
+        .lead-magnet-form[data-state="success"] .lead-magnet-form-fields {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== HEADER ========== -->
+    <div data-component="navigation"></div>
+
+    <!-- ========== HERO ========== -->
+    <div
+        data-component="hero-v2"
+        data-hero-label="Free Guide"
+        data-hero-title="COME HOME<span>TO YOUR BODY</span>"
+        data-hero-subtitle="5 daily rituals to return to your embodied intelligence and reclaim the self you buried under the noise."
+        data-hero-image-src="/assets/img/hero/GoddessSandi-byShariVandeCraen-9.jpg"
+        data-hero-place="mw-hero--place-bottom-left"
+        data-hero-overlay="mw-hero--overlay-bottom"
+        data-hero-cta-text="Get The Guide"
+        data-hero-cta-link="#signup"
+    ></div>
+
+    <!-- ========== SIGNUP SECTION ========== -->
+    <section id="signup" class="section mood-deep-anchor">
+        <div class="container container-narrow text-center">
+            <div class="ornament"><span>◊</span></div>
+            <h2>Get Your <span class="gold-texture-text">Free Guide</span></h2>
+            <p class="lead">Five short, embodied practices, enter your details and we'll send the guide straight to your inbox.</p>
+
+            <form id="lead-magnet-form" class="lead-magnet-form mt-xl" data-state="idle" novalidate>
+                <input type="hidden" name="leadMagnet" value="body-remembers">
+
+                <div class="lead-magnet-form-fields">
+                    <div class="lead-magnet-form-row mb-md">
+                        <input type="text" name="firstName" class="form-input" placeholder="First name" autocomplete="given-name" required>
+                        <input type="text" name="lastName" class="form-input" placeholder="Last name" autocomplete="family-name" required>
+                    </div>
+                    <div class="newsletter-form-group">
+                        <input type="email" name="email" class="form-input" placeholder="Your email address" autocomplete="email" required>
+                        <button type="submit" class="btn btn-primary">Send Me The Guide</button>
+                    </div>
+                </div>
+
+                <p class="lead-magnet-form-status" role="status" aria-live="polite"></p>
+            </form>
+
+            <p class="newsletter-privacy mt-md">No spam, only love. Unsubscribe anytime xx</p>
+        </div>
+    </section>
+
+    <!-- ========== FOOTER ========== -->
+    <div data-component="footer"></div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('lead-magnet-form');
+            if (!form) return;
+
+            const statusEl = form.querySelector('.lead-magnet-form-status');
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            function setStatus(message, type) {
+                statusEl.textContent = message;
+                statusEl.classList.remove('is-error', 'is-success');
+                if (type) statusEl.classList.add(type === 'error' ? 'is-error' : 'is-success');
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const payload = {
+                    firstName: formData.get('firstName')?.trim(),
+                    lastName: formData.get('lastName')?.trim(),
+                    email: formData.get('email')?.trim(),
+                    leadMagnet: formData.get('leadMagnet'),
+                };
+
+                if (!payload.firstName || !payload.lastName || !payload.email) {
+                    setStatus('Please fill in your first name, last name, and email.', 'error');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                setStatus('Sending...', null);
+
+                try {
+                    const response = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        setStatus(data.error || 'Something went wrong. Please try again.', 'error');
+                        submitBtn.disabled = false;
+                        return;
+                    }
+
+                    form.dataset.state = 'success';
+                    setStatus('Check your inbox. Your guide is on its way.', 'success');
+                } catch (err) {
+                    setStatus('Something went wrong. Please check your connection and try again.', 'error');
+                    submitBtn.disabled = false;
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

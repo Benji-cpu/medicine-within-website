@@ -2118,10 +2118,28 @@ const ConvertKitManager = (function() {
     const LEAD_MAGNET_SLUG = 'body-remembers';
     const DISMISS_KEY = 'mw_lm_popup_dismissed_at';
     const SUBSCRIBED_KEY = 'mw_lm_popup_subscribed';
+    const SESSION_SHOWN_KEY = 'mw_lm_popup_shown_this_session';
     const SNOOZE_DAYS = 7;
 
-    // Don't show on the dedicated lead-magnet page, legal pages, or internal/test pages
-    const EXCLUDED_PATH_PARTS = ['/lead-magnets/', '/legal/', '/mocks/', 'test-tag-subscriptions'];
+    // Don't show on the dedicated lead-magnet page, legal pages, internal/test
+    // pages, the newsletter's own signup page, or the paid-booking mentorship pages
+    const EXCLUDED_PATH_PARTS = ['/guides/', '/legal/', '/mocks/', 'test-tag-subscriptions', '/newsletter/', '/mentorship/'];
+
+    function safeStorageGet(getStorage, key) {
+        try {
+            return getStorage().getItem(key);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function safeStorageSet(getStorage, key, value) {
+        try {
+            getStorage().setItem(key, value);
+        } catch (e) {
+            // storage disabled (e.g. Safari "Block All Cookies") - fail silently
+        }
+    }
 
     function isExcludedPage() {
         const path = window.location.pathname;
@@ -2129,9 +2147,13 @@ const ConvertKitManager = (function() {
     }
 
     function shouldShow() {
-        if (localStorage.getItem(SUBSCRIBED_KEY) === 'true') return false;
+        // Already shown once this browsing session - don't repeat it on every
+        // subsequent page just because the visitor never explicitly closed it
+        if (safeStorageGet(() => sessionStorage, SESSION_SHOWN_KEY) === 'true') return false;
 
-        const dismissedAt = localStorage.getItem(DISMISS_KEY);
+        if (safeStorageGet(() => localStorage, SUBSCRIBED_KEY) === 'true') return false;
+
+        const dismissedAt = safeStorageGet(() => localStorage, DISMISS_KEY);
         if (dismissedAt) {
             const elapsedDays = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
             if (elapsedDays < SNOOZE_DAYS) return false;
@@ -2140,12 +2162,16 @@ const ConvertKitManager = (function() {
         return true;
     }
 
+    function markShownThisSession() {
+        safeStorageSet(() => sessionStorage, SESSION_SHOWN_KEY, 'true');
+    }
+
     function snooze() {
-        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+        safeStorageSet(() => localStorage, DISMISS_KEY, String(Date.now()));
     }
 
     function markSubscribed() {
-        localStorage.setItem(SUBSCRIBED_KEY, 'true');
+        safeStorageSet(() => localStorage, SUBSCRIBED_KEY, 'true');
     }
 
     function buildPopup() {
@@ -2176,29 +2202,77 @@ const ConvertKitManager = (function() {
         return overlay;
     }
 
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
     function wirePopup(overlay) {
+        const popupEl = overlay.querySelector('.lm-popup');
         const closeBtn = overlay.querySelector('.lm-popup__close');
         const form = overlay.querySelector('.lm-popup-form');
         const statusEl = overlay.querySelector('.lm-popup-status');
         const submitBtn = form.querySelector('button[type="submit"]');
+        const firstFieldInput = overlay.querySelector('input[name="firstName"]');
 
-        function hide() {
+        let lastFocused = null;
+
+        function getFocusable() {
+            return Array.from(popupEl.querySelectorAll('button, input, a[href]'))
+                .filter(el => !el.disabled);
+        }
+
+        function trapFocus(e) {
+            if (e.key !== 'Tab') return;
+            const focusable = getFocusable();
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+
+        function hideVisual() {
             overlay.classList.remove('is-visible');
-            snooze();
             document.body.style.overflow = '';
+            if (lastFocused && typeof lastFocused.focus === 'function') {
+                lastFocused.focus();
+            }
+        }
+
+        // Explicit dismissal (close button, backdrop click, Escape) - starts the 7-day snooze
+        function dismiss() {
+            hideVisual();
+            snooze();
         }
 
         function show() {
+            lastFocused = document.activeElement;
             overlay.classList.add('is-visible');
             document.body.style.overflow = 'hidden';
+            markShownThisSession();
+            // wait a frame so visibility:hidden -> visible has committed before focusing
+            requestAnimationFrame(function() {
+                (firstFieldInput || closeBtn).focus();
+            });
         }
 
-        closeBtn.addEventListener('click', hide);
+        closeBtn.addEventListener('click', dismiss);
         overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) hide();
+            if (e.target === overlay) dismiss();
         });
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && overlay.classList.contains('is-visible')) hide();
+            if (!overlay.classList.contains('is-visible')) return;
+            if (e.key === 'Escape') {
+                dismiss();
+            } else {
+                trapFocus(e);
+            }
         });
 
         function setStatus(message, type) {
@@ -2223,6 +2297,11 @@ const ConvertKitManager = (function() {
                 return;
             }
 
+            if (!validateEmail(payload.email)) {
+                setStatus('Please enter a valid email address.', 'error');
+                return;
+            }
+
             submitBtn.disabled = true;
             setStatus('Sending...', null);
 
@@ -2233,10 +2312,15 @@ const ConvertKitManager = (function() {
                     body: JSON.stringify(payload),
                 });
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    setStatus(data.error || 'Something went wrong. Please try again.', 'error');
+                    let message = 'Something went wrong. Please try again.';
+                    try {
+                        const data = await response.json();
+                        message = data.error || message;
+                    } catch (parseErr) {
+                        // non-JSON error body (e.g. an upstream 502/504 HTML page) - keep the generic message
+                    }
+                    setStatus(message, 'error');
                     submitBtn.disabled = false;
                     return;
                 }
@@ -2244,48 +2328,71 @@ const ConvertKitManager = (function() {
                 form.dataset.state = 'success';
                 setStatus('Check your inbox. Your guide is on its way.', 'success');
                 markSubscribed();
-                setTimeout(hide, 2500);
+                // Auto-close after a successful signup isn't a dismissal - the
+                // SUBSCRIBED_KEY check already keeps the popup from showing again
+                setTimeout(hideVisual, 2500);
             } catch (err) {
+                console.error('Lead Magnet Popup Error:', err);
                 setStatus('Something went wrong. Please check your connection and try again.', 'error');
                 submitBtn.disabled = false;
             }
         });
 
-        return { show, hide };
+        return { show, hide: dismiss };
     }
 
     function initExitIntentAndTimers(controls) {
         const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
         let triggered = false;
+        let cleanup = function() {};
 
         function fireOnce() {
             if (triggered) return;
             triggered = true;
+            cleanup();
             controls.show();
         }
 
         if (isDesktop) {
             // Exit intent: mouse leaves toward the top of the viewport
-            document.addEventListener('mouseout', function(e) {
+            const onMouseOut = function(e) {
                 if (!e.relatedTarget && e.clientY <= 0) fireOnce();
-            });
-            setTimeout(fireOnce, 9000);
+            };
+            document.addEventListener('mouseout', onMouseOut);
+            cleanup = function() {
+                document.removeEventListener('mouseout', onMouseOut);
+            };
         } else {
-            window.addEventListener('scroll', function() {
-                const scrolled = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-                if (scrolled >= 0.5) fireOnce();
-            }, { passive: true });
-            setTimeout(fireOnce, 9000);
+            const onScroll = function() {
+                const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+                if (scrollable > 0 && window.scrollY / scrollable >= 0.5) fireOnce();
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            cleanup = function() {
+                window.removeEventListener('scroll', onScroll);
+            };
         }
+
+        setTimeout(fireOnce, 3000);
     }
 
     function init() {
         if (isExcludedPage() || !shouldShow()) return;
 
-        const overlay = buildPopup();
-        document.body.appendChild(overlay);
-        const controls = wirePopup(overlay);
-        initExitIntentAndTimers(controls);
+        // Defer building the popup DOM until it's actually about to be shown
+        let controls = null;
+        function ensureControls() {
+            if (!controls) {
+                const overlay = buildPopup();
+                document.body.appendChild(overlay);
+                controls = wirePopup(overlay);
+            }
+            return controls;
+        }
+
+        initExitIntentAndTimers({
+            show: function() { ensureControls().show(); }
+        });
     }
 
     if (document.readyState === 'loading') {

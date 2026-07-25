@@ -4956,8 +4956,8 @@ a.formkit-powered-by {
 }
 
 .mw-hero__subtitle {
-    font-family: var(--font-heading);
-    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-family: var(--font-body);
+    font-size: clamp(1.15rem, 2.2vw, 1.6rem);
     font-style: italic;
     margin-bottom: 2.5rem;
     max-width: 600px;
