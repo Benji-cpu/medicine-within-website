@@ -43,6 +43,17 @@
         .lead-magnet-form[data-state="success"] .lead-magnet-form-fields {
             display: none;
         }
+        .lead-magnet-form-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            text-align: left;
+            font-size: 0.9rem;
+            margin-top: var(--space-md, 16px);
+        }
+        .lead-magnet-form-checkbox input {
+            margin-top: 3px;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +93,10 @@
                         <input type="email" name="email" class="form-input" placeholder="Your email address" autocomplete="email" required>
                         <button type="submit" class="btn btn-primary">Send Me The Guide</button>
                     </div>
+                    <label class="lead-magnet-form-checkbox">
+                        <input type="checkbox" name="wantsWomensContent">
+                        <span>I'd love updates on Sacred Feminine circles &amp; temples</span>
+                    </label>
                 </div>
 
                 <p class="lead-magnet-form-status" role="status" aria-live="polite"></p>
@@ -120,6 +135,7 @@
                     lastName: formData.get('lastName')?.trim(),
                     email: formData.get('email')?.trim(),
                     leadMagnet: formData.get('leadMagnet'),
+                    wantsWomensContent: formData.get('wantsWomensContent') === 'on',
                 };
 
                 if (!payload.firstName || !payload.lastName || !payload.email) {

@@ -13,11 +13,13 @@ const TEST_LEAD_MAGNETS = {
     name: 'The Body Remembers',
     subject: 'Your guide is here: The Body Remembers',
     downloadUrl: 'https://medicinewithin.nl/assets/downloads/the-body-remembers.pdf',
+    convertKitTagId: 999111,
   },
   'second-test-magnet': {
     name: 'Second Test Magnet',
     subject: 'Your Second Test Magnet guide',
     downloadUrl: 'https://medicinewithin.nl/assets/downloads/second-test-magnet.pdf',
+    // Deliberately no convertKitTagId - proves the sync is skipped, not crashed, when unset.
   },
 };
 
@@ -74,19 +76,21 @@ function fakeReqRes(body) {
   return { req, res };
 }
 
-describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Resend ever constructed)', () => {
+describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Resend/ConvertKit ever constructed)', () => {
   let fakeSupabase;
   let sendEmail;
+  let convertKit;
 
   beforeEach(() => {
     fakeSupabase = createFakeSupabase();
     sendEmail = vi.fn().mockResolvedValue({ id: 'fake-email-id' });
+    convertKit = vi.fn().mockResolvedValue({ subscription: { id: 'fake-ck-id' } });
   });
 
   it('saves the subscriber and sends a welcome email on first signup', async () => {
     const result = await handleSubscribeRequest(
       { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
-      { supabase: fakeSupabase, sendEmail, leadMagnets: TEST_LEAD_MAGNETS }
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
     );
 
     expect(result.statusCode).toBe(200);
@@ -105,7 +109,13 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
     expect(notifyPayload.html).toContain('sandi@example.com');
 
     expect(fakeSupabase._rows()).toEqual([
-      { first_name: 'Sandi', last_name: 'J', email: 'sandi@example.com', lead_magnet: 'body-remembers' },
+      {
+        first_name: 'Sandi',
+        last_name: 'J',
+        email: 'sandi@example.com',
+        lead_magnet: 'body-remembers',
+        wants_womens_content: false,
+      },
     ]);
   });
 
@@ -191,6 +201,96 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
     expect(result.statusCode).toBe(200);
     expect(result.body).toEqual({ success: true, alreadySubscribed: true });
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('syncs the subscriber to ConvertKit with the lead magnet tag on first signup', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(convertKit).toHaveBeenCalledTimes(1);
+    expect(convertKit).toHaveBeenCalledWith({
+      apiSecret: 'fake-secret',
+      tagId: 999111,
+      email: 'sandi@example.com',
+      firstName: 'Sandi',
+    });
+  });
+
+  it('skips the ConvertKit sync when the lead magnet has no tag configured', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'second-test-magnet' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(convertKit).not.toHaveBeenCalled();
+  });
+
+  it('skips the ConvertKit sync when no API secret is configured', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: undefined, leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(convertKit).not.toHaveBeenCalled();
+  });
+
+  it('does not sync to ConvertKit on a duplicate signup to the same lead magnet', async () => {
+    const payload = { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' };
+    const deps = { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS };
+
+    await handleSubscribeRequest(payload, deps);
+    await handleSubscribeRequest(payload, deps);
+
+    expect(convertKit).toHaveBeenCalledTimes(1);
+  });
+
+  it('still reports success and sends the welcome email even if the ConvertKit sync fails', async () => {
+    convertKit.mockRejectedValue(new Error('ConvertKit is down'));
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(result.statusCode).toBe(200);
+    expect(result.body).toEqual({ success: true, alreadySubscribed: false });
+    expect(sendEmail).toHaveBeenCalledTimes(2);
+    expect(consoleError).toHaveBeenCalled();
+
+    consoleError.mockRestore();
+  });
+
+  it('saves the opt-in and tags the subscriber Women only when wantsWomensContent is checked', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers', wantsWomensContent: true },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(fakeSupabase._rows()[0].wants_womens_content).toBe(true);
+
+    // Called twice: once for the lead magnet tag, once for the Women only tag.
+    expect(convertKit).toHaveBeenCalledTimes(2);
+    expect(convertKit).toHaveBeenCalledWith({
+      apiSecret: 'fake-secret',
+      tagId: 5463428,
+      email: 'sandi@example.com',
+      firstName: 'Sandi',
+    });
+  });
+
+  it('does not apply the Women only tag when the checkbox is left unchecked', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', lastName: 'J', email: 'sandi@example.com', leadMagnet: 'body-remembers', wantsWomensContent: false },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(fakeSupabase._rows()[0].wants_womens_content).toBe(false);
+    // Only the lead magnet tag call, not the Women only tag.
+    expect(convertKit).toHaveBeenCalledTimes(1);
+    expect(convertKit).not.toHaveBeenCalledWith(expect.objectContaining({ tagId: 5463428 }));
   });
 });
 
