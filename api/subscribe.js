@@ -16,9 +16,9 @@ function createHandler({ supabase, sendEmail, notifyTo }) {
     }
 
     try {
-      const { firstName, lastName, email, leadMagnet, wantsWomensContent } = req.body || {};
+      const { firstName, lastName, phone, country, email, leadMagnet, wantsWomensContent } = req.body || {};
       const result = await handleSubscribeRequest(
-        { firstName, lastName, email, leadMagnet, wantsWomensContent },
+        { firstName, lastName, phone, country, email, leadMagnet, wantsWomensContent },
         { supabase, sendEmail, notifyTo }
       );
       res.status(result.statusCode).json(result.body);

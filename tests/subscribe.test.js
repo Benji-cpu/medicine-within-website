@@ -112,11 +112,53 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
       {
         first_name: 'Sandi',
         last_name: 'J',
+        phone: null,
+        country: null,
         email: 'sandi@example.com',
         lead_magnet: 'body-remembers',
         wants_womens_content: false,
       },
     ]);
+  });
+
+  it('accepts a signup with no last name, phone, or country - only first name and email are required', async () => {
+    const result = await handleSubscribeRequest(
+      { firstName: 'Sandi', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(result.statusCode).toBe(200);
+    expect(fakeSupabase._rows()).toEqual([
+      {
+        first_name: 'Sandi',
+        last_name: null,
+        phone: null,
+        country: null,
+        email: 'sandi@example.com',
+        lead_magnet: 'body-remembers',
+        wants_womens_content: false,
+      },
+    ]);
+  });
+
+  it('saves phone and country when provided', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', phone: '+31612345678', country: 'Netherlands', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(fakeSupabase._rows()[0].phone).toBe('+31612345678');
+    expect(fakeSupabase._rows()[0].country).toBe('Netherlands');
+  });
+
+  it('rejects a signup missing first name even if last name/phone/country are present', async () => {
+    const result = await handleSubscribeRequest(
+      { lastName: 'J', phone: '+31612345678', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(result.statusCode).toBe(400);
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('sends the new-subscriber notification to a custom address when notifyTo is provided', async () => {
@@ -210,6 +252,35 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
     );
 
     expect(convertKit).toHaveBeenCalledTimes(1);
+    expect(convertKit).toHaveBeenCalledWith({
+      apiSecret: 'fake-secret',
+      tagId: 999111,
+      email: 'sandi@example.com',
+      firstName: 'Sandi',
+    });
+  });
+
+  it('passes phone and country to ConvertKit as custom fields when provided', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', phone: '+31612345678', country: 'Netherlands', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
+    expect(convertKit).toHaveBeenCalledWith({
+      apiSecret: 'fake-secret',
+      tagId: 999111,
+      email: 'sandi@example.com',
+      firstName: 'Sandi',
+      fields: { phone_number: '+31612345678', country: 'Netherlands' },
+    });
+  });
+
+  it('does not send a ConvertKit fields object when phone and country are both absent', async () => {
+    await handleSubscribeRequest(
+      { firstName: 'Sandi', email: 'sandi@example.com', leadMagnet: 'body-remembers' },
+      { supabase: fakeSupabase, sendEmail, convertKit, convertKitApiSecret: 'fake-secret', leadMagnets: TEST_LEAD_MAGNETS }
+    );
+
     expect(convertKit).toHaveBeenCalledWith({
       apiSecret: 'fake-secret',
       tagId: 999111,

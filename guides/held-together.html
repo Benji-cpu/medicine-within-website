@@ -79,7 +79,7 @@
         <div class="container container-narrow text-center">
             <div class="ornament"><span>◊</span></div>
             <h2>Get Your <span class="gold-texture-text">Free Guide</span></h2>
-            <p class="lead">Four real steps you'll actually use, not a PDF that vanishes into a folder forever. Pop in your details & it's yours ;)</p>
+            <p class="lead">Four real steps you'll actually use, not a PDF that vanishes into a folder forever. Share your details and it's yours &lt;3</p>
 
             <form id="lead-magnet-form" class="lead-magnet-form mt-xl" data-state="idle" novalidate>
                 <input type="hidden" name="leadMagnet" value="held-together">
@@ -87,7 +87,10 @@
                 <div class="lead-magnet-form-fields">
                     <div class="lead-magnet-form-row mb-md">
                         <input type="text" name="firstName" class="form-input" placeholder="First name" autocomplete="given-name" required>
-                        <input type="text" name="lastName" class="form-input" placeholder="Last name" autocomplete="family-name" required>
+                        <input type="tel" name="phone" class="form-input" placeholder="Phone (optional)" autocomplete="tel">
+                    </div>
+                    <div class="lead-magnet-form-row mb-md">
+                        <input type="text" name="country" class="form-input" placeholder="Country (optional)" autocomplete="country-name">
                     </div>
                     <div class="newsletter-form-group">
                         <input type="email" name="email" class="form-input" placeholder="Your email address" autocomplete="email" required>
@@ -132,14 +135,15 @@
                 const formData = new FormData(form);
                 const payload = {
                     firstName: formData.get('firstName')?.trim(),
-                    lastName: formData.get('lastName')?.trim(),
+                    phone: formData.get('phone')?.trim(),
+                    country: formData.get('country')?.trim(),
                     email: formData.get('email')?.trim(),
                     leadMagnet: formData.get('leadMagnet'),
                     wantsWomensContent: formData.get('wantsWomensContent') === 'on',
                 };
 
-                if (!payload.firstName || !payload.lastName || !payload.email) {
-                    setStatus('Please fill in your first name, last name, and email.', 'error');
+                if (!payload.firstName || !payload.email) {
+                    setStatus('Please fill in your first name and email.', 'error');
                     return;
                 }
 
