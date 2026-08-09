@@ -100,7 +100,7 @@ describe('handleSubscribeRequest (unit, injected fakes — no real Supabase/Rese
     const emailPayload = sendEmail.mock.calls[0][0];
     expect(emailPayload.to).toBe('sandi@example.com');
     expect(emailPayload.subject).toBe('Your guide is here: The Body Remembers');
-    expect(emailPayload.html).toContain('Hi Sandi,');
+    expect(emailPayload.html).toContain('Beloved Sandi,');
     expect(emailPayload.html).toContain('https://medicinewithin.nl/assets/downloads/the-body-remembers.pdf');
 
     const notifyPayload = sendEmail.mock.calls[1][0];

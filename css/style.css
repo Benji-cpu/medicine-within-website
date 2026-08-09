@@ -5837,3 +5837,67 @@ section .content-block:nth-of-type(7n+7) .content-block__media .image-frame img 
         flex-direction: column;
     }
 }
+
+/* ========== START HERE (homepage triage) ========== */
+/* A fork, not a menu: each row is a sentence someone says in their own head,
+   paired with where that sentence leads. Problem first, offer second. */
+.start-here-list {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 46rem;
+}
+
+.start-here-list li + li {
+    border-top: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.start-here-list a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-sm, 1rem);
+    padding: 1.35rem 0.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: padding-left 0.25s ease, color 0.25s ease;
+}
+
+.start-here-list a:hover,
+.start-here-list a:focus-visible {
+    padding-left: 0.9rem;
+    color: var(--color-gold);
+}
+
+.start-here-said {
+    font-family: var(--font-heading);
+    font-size: 1.18rem;
+    line-height: 1.4;
+    flex: 1 1 auto;
+}
+
+.start-here-next {
+    flex: 0 0 auto;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    white-space: nowrap;
+}
+
+.start-here-next::after {
+    content: " \2192";
+}
+
+@media (max-width: 600px) {
+    .start-here-list a {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        padding: 1.15rem 0.25rem;
+    }
+
+    .start-here-said {
+        font-size: 1.05rem;
+    }
+}
