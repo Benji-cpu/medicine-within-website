@@ -1,12 +1,12 @@
 ## EMBODIED TANTRA
-Level I Weekend Training + Deeper Intimacy Tantrik Temple
+Weekend Immersion + Deeper Intimacy Tantrik Temple
 For more “I didn’t know this was possible” moments.
-A two-day immersive initiation into Tantra as a lived, embodied path —
+A weekend immersive initiation into Tantra as a lived, embodied path —
 followed by a Tantrik Temple designed to integrate, ground, and close the journey in ritual and truth.
 This is where intimacy becomes conscious.
 Where eros becomes sacred.
 Where the body becomes a doorway to truth.
-→ Join the Embodied Tantra Weekend (Feb 21–22)
+→ Join the Embodied Tantra Weekend Immersion [CONFIRM DATE: Nov 20–22, 2026 is the next fully-open cohort per live Hipsy data checked 2026-08-05. Aug 21–23, 2026 is also still live and on sale, but it's 16 days out and already in its final pricing tier]
 Beginner-friendly · Deep for experienced practitioners
 
 ## ABOUT EMBODIED TANTRA
@@ -69,14 +69,13 @@ You’re welcome if you are:
 • single or partnered
 • longing for intimacy rooted in truth, not performance
 You’ll leave with tools you’ll use for years, not just a weekend.
-→ Reserve my place (Feb 21–22)
+→ Reserve my place [CONFIRM DATE: see note above]
 
 ## A RECURRING INITIATION
 Embodied Tantra is offered as a quarterly weekend immersion.
 Each edition carries the same core transmission —
 with fresh depth, nuance, and evolution each time.
-The next training takes place February 21–22,
-with future dates released gradually to keep the field clean and focused.
+See current dates and availability on our events page. This training runs quarterly, and spots move fast within each tier.
 
 ## THE INTEGRATION:
 ### DEEPER INTIMACY — TANTRIK TEMPLE
@@ -91,7 +90,7 @@ A space to:
 • close the weekend together with clarity and integrity
 Participation is optional —
 and deeply recommended.
-The Temple is open to Embodied Tantra participants and the wider Tantra community, creating a mature, grounded, embodied field.
+Deeper Intimacy is an advanced space, not an open door. It is never the first temple anyone enters. Every applicant is reviewed before entry: you qualify either by completing the Embodied Tantra Weekend Immersion first (the same weekend counts, the Temple opens Sunday afternoon, right after training closes), or by bringing real prior experience from another temple or tantra space (ISTA, Beyond, TNT, or similar). That review is what keeps the field mature, grounded, and safe for everyone already inside it.
 
 ### INTRODUCING — DEEPER INTIMACY
 You are warmly invited to step beyond the ordinary
@@ -116,10 +115,10 @@ This Temple is for you if you are:
 • craving real, embodied intimacy
 • curious about conscious sensuality & erotic exploration
 • ready to meet others in depth and presence
-• familiar with Temple spaces (ISTA, Beyond, TNT) or Tantra work
-This is an advanced space.
-If you are new to Tantra, we warmly invite you to begin with the
-Embodied Tantra Level I Weekend (Feb 21–22) to enter the Temple with grounding and clarity.
+• familiar with Temple spaces (ISTA, Beyond, TNT) or Tantra work already behind you
+This is an advanced space. It is not the first time someone enters: everyone applies, and first-time temple-goers without prior experience are kindly redirected, not admitted.
+If you are new to Tantra or have never been in a temple space before, this isn’t your starting point, and that’s by design, not a rejection. Begin with the Embodied Tantra Weekend Immersion. Complete the training, and you enter the Temple that same Sunday afternoon, already grounded and already qualified.
+[EDITORIAL NOTE for Sandi: this is the single highest-stakes paragraph on the page, it's the line that used to contradict itself. If you have a real moment, someone you redirected who came back properly qualified later, or a graduate who can speak to why doing the Weekend first actually mattered once they were in the Temple, that real story would land far harder here than this explainer copy. Happy to weave it in once you have it.]
 
 ## WHAT TO EXPECT — DEEPER INTIMACY
 The afternoon begins with a landing circle and clear agreements.
@@ -137,20 +136,19 @@ This is what makes the difference between a professionally held Temple
 and trying to figure it out on your own.
 
 ## PRACTICAL DETAILS
-Embodied Tantra Training
-📅 Saturday–Sunday, Feb 21–22, 2026
-🕘 Sat 09:00–17:30 · Sun 09:00–13:00
+Embodied Tantra Weekend Immersion
+📅 [CONFIRM DATE, see note at top of doc]
+🕘 Fri 19:00–21:30 · Sat 09:00–17:30 · Sun 09:00–13:00
 Deeper Intimacy Tantrik Temple
-📅 Sunday, Feb 22
-🕒 Doors open 15:30 · Close 16:00 · Closing 21:00
-📍 Temple of Happiness
-Condensatorweg 36, Amsterdam
+📅 Sunday afternoon of the same weekend
+🕒 Doors open 15:30 sharp (late entry not permitted) · Closing circle 21:00
+📍 The Conscious Place, Amsterdam
+[FLAG: live Hipsy listing text still shows the venue as "Temple of Happiness, Condensatorweg 36." Confirm whether that's the same address under a new name, or whether Hipsy also needs updating before this goes live]
 Energy Exchange
-Tier 1: €339
-Tier 2: €349
-Tier 3: €369
-Deeper Intimacy Temple: €69
-(discounted for Embodied Tantra participants)
+Embodied Tantra Weekend Immersion: Tier 1 €339 · Tier 2 €349 · Tier 3 €369
+Deeper Intimacy Temple, bought together with the Weekend: €77
+Deeper Intimacy Temple, standalone (application required, subject to review): Early Bird €99 · Normal €119 · Late €129
+(Prices verified against the live Hipsy listings on 2026-08-05. Reconfirm before publishing if this page goes live more than a few weeks out, tiers move as each cohort sells.)
 Substance-free.
 We get high on presence, eros, and the living temple we co-create.
 
@@ -173,6 +171,6 @@ Deeper Intimacy lets you walk through it.
 Come learn.
 Come practice.
 Come integrate.
-→ Join the Embodied Tantra Weekend
-→ Add Deeper Intimacy Temple (Feb 22)
+→ Join the Embodied Tantra Weekend Immersion
+→ Add Deeper Intimacy Temple (Sunday of the same weekend, application required)
 → Have a question? Contact us

@@ -2406,44 +2406,43 @@ body.mobile-menu-open::before {
    13. Testimonials
    -------------------------------------------------------------------------- */
 .testimonial {
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto;
-    padding: var(--space-sm);
+    max-width: 620px;
+    margin: var(--space-md) auto 0;
+    padding: var(--space-md) 0 0;
+    border-top: 1px solid rgba(197, 165, 114, 0.28);
+    text-align: left;
     position: relative;
+}
+
+.testimonial + .testimonial {
+    margin-top: var(--space-md);
 }
 
 .testimonial-quote {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
+    font-family: var(--font-body);
+    font-size: 1.15rem;
     font-style: italic;
-    line-height: 1.7;
-    margin-bottom: var(--space-md);
-    position: relative;
-    z-index: 1;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
+    font-weight: 400;
+    line-height: 1.72;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0 0 0.7rem;
+    opacity: 0.94;
 }
 
 .testimonial-quote::before {
-    content: '"';
-    font-size: 4rem;
-    color: var(--color-gold);
-    position: absolute;
-    top: -20px;
-    left: -20px;
-    opacity: 0.3;
+    content: none;
 }
 
 .testimonial-author {
     color: var(--color-gold);
-    font-size: 0.875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-    margin-top: auto;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 500;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0;
 }
 
 .testimonial-name {
@@ -2455,7 +2454,7 @@ body.mobile-menu-open::before {
 
 .testimonial-role {
     color: var(--color-text-muted);
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     text-transform: none;
     letter-spacing: normal;
     font-style: italic;
@@ -5901,3 +5900,148 @@ section .content-block:nth-of-type(7n+7) .content-block__media .image-frame img 
         font-size: 1.05rem;
     }
 }
+
+/* ========== PRICE LIST (Kambô ceremonies) ========== */
+/* One number per offer, readable at a glance. People were having to enquire
+   to find out what a ceremony costs. */
+.price-list {
+    list-style: none;
+    margin: 0 auto var(--space-md, 2rem);
+    padding: 0;
+    max-width: 44rem;
+}
+
+.price-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.1rem 0.25rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.price-list__what {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: var(--font-heading);
+    font-size: 1.08rem;
+    line-height: 1.35;
+}
+
+.price-list__what em {
+    font-family: var(--font-body, inherit);
+    font-style: normal;
+    font-size: 0.88rem;
+    opacity: 0.7;
+}
+
+.price-list__amount {
+    flex: 0 0 auto;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--color-gold);
+    white-space: nowrap;
+}
+
+.price-list__amount small {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    text-transform: uppercase;
+}
+
+.price-list__heading {
+    max-width: 44rem;
+    margin: var(--space-lg, 3rem) auto var(--space-sm, 1rem);
+    text-align: center;
+}
+
+.price-list__note {
+    max-width: 44rem;
+    margin: 0 auto var(--space-sm, 1rem);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    opacity: 0.85;
+}
+
+@media (max-width: 560px) {
+    .price-list li {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    .price-list__amount { font-size: 1.15rem; }
+    .price-list__amount small { display: inline; }
+}
+
+
+/* Standalone in-page figure (offering pages) */
+.page-figure {
+    max-width: 760px;
+    margin: var(--space-xl) auto 0;
+    border-radius: 16px;
+    border: 2px solid rgba(197, 165, 114, 0.55);
+    overflow: hidden;
+    background: transparent;
+    aspect-ratio: 16 / 10;
+}
+
+.page-figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    border-radius: 14px;
+    filter: sepia(0.18) contrast(1.06) brightness(0.86);
+    transition: filter 0.5s ease;
+}
+
+.page-figure:hover img { filter: sepia(0.08) contrast(1.08) brightness(0.95); }
+
+@media (max-width: 600px) { .page-figure { aspect-ratio: 4 / 3; margin-top: var(--space-lg); } }
+
+
+/* Testimonial sitting directly under a section heading: close the gap */
+.section-header + .testimonial,
+.content-text + .testimonial:first-of-type { margin-top: var(--space-sm); }
+.section-header { margin-bottom: var(--space-md); }
+
+
+/* Full-bleed photo sections: the image is the point, not a texture */
+.cta-bg-section--photo { min-height: 62vh; display: flex; align-items: center; }
+.cta-bg-section--photo .cta-bg-section__image { opacity: 1; object-position: center 28%; }
+.cta-bg-section--photo .cta-bg-section__overlay {
+    background: linear-gradient(to bottom, rgba(20,16,18,0.55) 0%, rgba(20,16,18,0.35) 45%, rgba(20,16,18,0.75) 100%);
+}
+.cta-bg-section--photo .cta-bg-section__content { width: 100%; }
+.cta-bg-section--photo h2 { text-shadow: 0 2px 24px rgba(0,0,0,0.55); }
+.cta-bg-section--photo p { text-shadow: 0 1px 16px rgba(0,0,0,0.6); max-width: 46ch; margin-left: auto; margin-right: auto; }
+@media (max-width: 700px) { .cta-bg-section--photo { min-height: 52vh; } }
+
+
+/* Living Temple refinements */
+
+
+/* Tighter vertical rhythm where two text sections meet */
+.section--tight { padding-top: var(--space-lg); padding-bottom: var(--space-lg); }
+.section--tight-bottom { padding-bottom: var(--space-md); }
+.section--tight-top { padding-top: var(--space-md); }
+
+/* Screen-reader-only utility (SEO h1 on hero pages) */
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+
+/* Bigger, more inviting cards (Living Temple inclusions) */
+.portal-grid--big .portal-card__media { aspect-ratio: 4 / 3; }
+.portal-grid--big .portal-card__title { font-size: 1.45rem; letter-spacing: 0.06em; }
+.portal-grid--big .portal-card__desc { font-size: 1.1rem; line-height: 1.7; }
+.portal-grid--big .portal-card__body { padding: 2rem 2rem 2.25rem; }
+@media (max-width: 768px) { .portal-grid--big { grid-template-columns: 1fr; } }
+
+
+/* Calendar links, visible on cream */
+.price-list__what a { color: #2F4347; font-weight: 500; text-decoration: underline; text-decoration-color: var(--color-gold); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.price-list__what a:hover { color: var(--color-gold); }
+.section-dark .price-list__what a { color: #F1E9D8; }
