@@ -1,0 +1,17 @@
+# Local tooling, never served
+node_modules
+.git
+
+# Design and QA artefacts, not part of the site
+mocks
+screenshots
+tests
+new_page_content
+
+# Working notes and scratch
+.masterminds-context
+*.draft.html
+scripts
+
+# OS noise
+.DS_Store
